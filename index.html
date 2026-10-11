@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>社内課題対応状況</title>
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#fafbfc; --line:#e1e4e8;
+  --text:#1b1f23; --muted:#6a737d; --accent:#1f5fa9; --accent-weak:#e8f0fa;
+  --s1:#c62828; --s1b:#fdecea; --s2:#1565c0; --s2b:#e7f0fb;
+  --s3:#6a737d; --s3b:#eef0f2; --s4:#ef6c00; --s4b:#fdf0e3;
+  --s5:#2e7d32; --s5b:#e9f3ea;
+  --p-high:#c62828; --p-mid:#ef6c00; --p-low:#6a737d;
+  --radius:8px; --shadow:0 1px 3px rgba(27,31,35,.08),0 4px 12px rgba(27,31,35,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15181c; --surface:#1d2127; --surface-2:#22272e; --line:#333a44;
+    --text:#e6e9ef; --muted:#9aa4b2; --accent:#5b9be0; --accent-weak:#1c2b3d;
+    --s1:#ff8a80; --s1b:#3a2422; --s2:#82b4ef; --s2b:#1d2a3a;
+    --s3:#9aa4b2; --s3b:#272c33; --s4:#ffb267; --s4b:#3a2e1f;
+    --s5:#8bc98f; --s5b:#1f2e21;
+    --p-high:#ff8a80; --p-mid:#ffb267; --p-low:#9aa4b2;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15181c; --surface:#1d2127; --surface-2:#22272e; --line:#333a44;
+  --text:#e6e9ef; --muted:#9aa4b2; --accent:#5b9be0; --accent-weak:#1c2b3d;
+  --s1:#ff8a80; --s1b:#3a2422; --s2:#82b4ef; --s2b:#1d2a3a;
+  --s3:#9aa4b2; --s3b:#272c33; --s4:#ffb267; --s4b:#3a2e1f;
+  --s5:#8bc98f; --s5b:#1f2e21;
+  --p-high:#ff8a80; --p-mid:#ffb267; --p-low:#9aa4b2;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Meiryo UI","Meiryo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--accent)}
+
+/* ---------- layout ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50; background:var(--surface);
+  border-bottom:1px solid var(--line); box-shadow:0 1px 2px rgba(27,31,35,.04);
+}
+.topbar-in{
+  max-width:1360px; margin:0 auto; padding:10px 16px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand h1{font-size:16px;font-weight:700;margin:0;white-space:nowrap}
+.brand .sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.avatar{
+  width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:12px;font-weight:700;flex:none;
+}
+main{max-width:1360px;margin:0 auto;padding:16px}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--line); background:var(--surface); border-radius:6px;
+  padding:7px 13px; cursor:pointer; font-size:13px; white-space:nowrap;
+  display:inline-flex; align-items:center; gap:6px; transition:background .12s,border-color .12s;
+}
+.btn:hover:not(:disabled){background:var(--surface-2);border-color:var(--muted)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn-primary:hover:not(:disabled){background:var(--accent);filter:brightness(1.1)}
+.btn-sm{padding:4px 9px;font-size:12px}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover:not(:disabled){background:var(--surface-2);border-color:var(--line)}
+
+/* ---------- gate / setup ---------- */
+.gate{max-width:640px;margin:56px auto;padding:0 16px;text-align:center}
+.gate .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:32px 28px;box-shadow:var(--shadow)}
+.gate h2{margin:0 0 8px;font-size:20px}
+.gate p{color:var(--muted);margin:0 0 20px}
+.setup{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:var(--shadow)}
+.setup h2{margin:0 0 4px;font-size:18px}
+.setup ol{padding-left:1.3em;line-height:1.9}
+.setup code{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px;word-break:break-all}
+.setup .warn{background:var(--s4b);border-left:3px solid var(--s4);padding:10px 14px;border-radius:0 6px 6px 0;margin:16px 0;font-size:13px}
+
+/* ---------- stats ---------- */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.stat{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:9px 14px; cursor:pointer; min-width:86px; text-align:left;
+  transition:border-color .12s, box-shadow .12s;
+}
+.stat:hover{border-color:var(--accent)}
+.stat[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.stat .n{font-size:21px;font-weight:700;line-height:1.1;display:block}
+.stat .l{font-size:11px;color:var(--muted)}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:10px 12px; margin-bottom:14px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+}
+.toolbar input[type=search],.toolbar select{
+  border:1px solid var(--line); background:var(--surface-2); border-radius:6px; padding:7px 10px;
+}
+.toolbar input[type=search]{flex:1 1 200px;min-width:160px}
+.toolbar .spacer{flex:1 1 auto}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
+
+/* ---------- list ---------- */
+.list{display:flex;flex-direction:column;gap:8px}
+.row{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:12px 14px; cursor:pointer; transition:border-color .12s, box-shadow .12s;
+}
+.row:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.row-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.no{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:34px}
+.title{font-weight:600;flex:1 1 260px;min-width:0;word-break:break-word}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap;flex:none}
+.b-s1{background:var(--s1b);color:var(--s1)} .b-s2{background:var(--s2b);color:var(--s2)}
+.b-s3{background:var(--s3b);color:var(--s3)} .b-s4{background:var(--s4b);color:var(--s4)}
+.b-s5{background:var(--s5b);color:var(--s5)}
+.pri{font-size:11px;font-weight:700;flex:none}
+.pri-高,.pri-高＋,.pri-高\+{color:var(--p-high)} .pri-中{color:var(--p-mid)} .pri-低{color:var(--p-low)}
+.row-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:5px}
+.row-meta b{font-weight:400;color:var(--text)}
+.row-snip{
+  font-size:12px;color:var(--muted);margin-top:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.empty{text-align:center;color:var(--muted);padding:48px 16px}
+
+/* ---------- modal ---------- */
+.ov{
+  position:fixed;inset:0;background:rgba(10,12,16,.5);z-index:100;
+  display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;
+}
+.ov[hidden]{display:none}
+.modal{
+  background:var(--surface); border-radius:12px; width:100%; max-width:780px;
+  box-shadow:0 12px 40px rgba(0,0,0,.3); border:1px solid var(--line);
+}
+.modal-h{
+  padding:16px 20px; border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--surface);
+  border-radius:12px 12px 0 0;z-index:1;
+}
+.modal-h h3{margin:0;font-size:16px;flex:1 1 auto;min-width:0}
+.modal-b{padding:18px 20px}
+.modal-f{
+  padding:14px 20px; border-top:1px solid var(--line); display:flex; gap:8px;
+  justify-content:flex-end; align-items:center; flex-wrap:wrap;
+}
+.modal-f .msg{margin-right:auto;font-size:12px;color:var(--muted)}
+.fld{margin-bottom:14px}
+.fld>label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}
+.fld .hint{font-size:11px;color:var(--muted);font-weight:400}
+.fld input[type=text],.fld select,.fld textarea{
+  width:100%;border:1px solid var(--line);background:var(--surface-2);
+  border-radius:6px;padding:8px 10px;
+}
+.fld textarea{resize:vertical;min-height:72px;line-height:1.7}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.chip{
+  border:1px solid var(--line);background:var(--surface-2);border-radius:999px;
+  padding:3px 10px;font-size:11px;cursor:pointer;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.req::after{content:" *";color:var(--s1)}
+.log{
+  background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+  padding:10px 12px;font-size:12px;line-height:1.8;max-height:260px;overflow:auto;
+  white-space:pre-wrap;word-break:break-word;
+}
+.ro{background:var(--s4b);border-left:3px solid var(--s4);padding:9px 13px;border-radius:0 6px 6px 0;font-size:12px;margin-bottom:14px}
+.err{background:var(--s1b);border-left:3px solid var(--s1);padding:9px 13px;border-radius:0 6px 6px 0;font-size:12px;margin:12px 0;white-space:pre-wrap}
+.spin{
+  width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .7s linear infinite;display:inline-block;flex:none;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;
+  background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;
+  font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.3);
+}
+.toast[hidden]{display:none}
+@media (max-width:640px){
+  .grid2{grid-template-columns:1fr}
+  main{padding:12px}
+  .topbar-in{padding:10px 12px}
+  .brand .sub{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ======================================================================
+     設定 — ここだけ書き換えれば動きます
+     ====================================================================== -->
+<script>
+const CONFIG = {
+  // ── Entra ID のアプリ登録で発行された「アプリケーション (クライアント) ID」
+  clientId: "PASTE_CLIENT_ID_HERE",
+
+  // ── ECH のテナント ID（確認済み・変更不要）
+  tenantId: "217dd8e0-d763-4c4e-8e7d-649562956784",
+
+  // ── 対象ファイル（確認済み・変更不要）
+  driveId: "b!OzkZJOvVAkC-uha78FufqfourmYPANtMvXiOFEekcWpskaM-HJCfT55MDeD2Hwta",
+  itemId:  "0176PNMSCK7TUGHCIF4FAKPTHPPVRAKU2X",
+  sheetName: "★新対応一覧★",
+  // 共有トークン付きリンク（?e=... 形式）はここに書かないこと。公開ページに載せると
+  // 共有範囲によってはファイル自体が外部から開けてしまいます。権限ベースの通常URLを使います。
+  excelUrl: "https://echwf.sharepoint.com/sites/msteams_bc6d76/Shared%20Documents/%E4%B8%80%E8%88%AC/%E7%A4%BE%E5%86%85%E8%AA%B2%E9%A1%8C%E5%AF%BE%E5%BF%9C%E7%8A%B6%E6%B3%81.xlsx",
+
+  // ── 更新を許可するメンバーの追加ガード（メールアドレス／小文字）
+  //    空配列 [] = SharePoint「経営ボード」チームの権限だけで判定（既定）。
+  //    このページは URL を知れば誰でも取得できるため、ここにメールアドレスを
+  //    書くと社外から読めてしまいます。公開ホスティングでは空のままにしてください。
+  boardMembers: [],
+
+  // ── 入力候補
+  owners:   ["廣田","桝田","板谷","根岸","藤井","山下","岡本","乙武","菅","総務人事","教育","各部長"],
+  statuses: ["1.新規","2.対応中","3.凍結","4.保留","5.終了"],
+  priorities:["高","中","低"],
+};
+</script>
+
+<div id="app"></div>
+<div class="ov" id="ov" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
+<script>
+"use strict";
+
+/* ==================================================================
+   定数
+   ================================================================== */
+const COLS = ["№","ステータス","起表日","優先度","タイトル","発案者","主担当",
+              "関係者","会議 対象","内容","補足","具体的対応"];
+const C = { NO:0, ST:1, DATE:2, PRI:3, TITLE:4, FROM:5, OWNER:6,
+            REL:7, MTG:8, BODY:9, NOTE:10, ACT:11 };
+const GRAPH = "https://graph.microsoft.com/v1.0";
+const SCOPES = ["User.Read","Files.ReadWrite.All"];
+
+/* ==================================================================
+   状態
+   ================================================================== */
+const S = {
+  msal:null, account:null, me:null,
+  sheetId:null, rows:[], headerRow:1, fileMeta:null,
+  canWrite:false, loading:false,
+  filter:{ q:"", status:new Set(["1.新規","2.対応中","3.凍結","4.保留"]),
+           pri:"", owner:"", mtgOnly:false },
+};
+
+/* ==================================================================
+   小道具
+   ================================================================== */
+const $ = (s,r)=> (r||document).querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const el = (h)=>{ const t=document.createElement("template"); t.innerHTML=h.trim(); return t.content.firstElementChild; };
+
+function toast(msg,ms){
+  const t=$("#toast"); t.textContent=msg; t.hidden=false;
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, ms||2600);
+}
+function todayStr(d){
+  d = d || new Date();
+  return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate();
+}
+/** JS Date -> Excel シリアル値（1900 日付システム） */
+function excelSerial(d){
+  const utc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((utc - Date.UTC(1899,11,30)) / 86400000);
+}
+/** Excel シリアル値 or 文字列 -> 表示用文字列 */
+function fmtDate(v){
+  if(v===""||v==null) return "";
+  if(typeof v==="number" && v>20000 && v<80000){
+    const ms = Date.UTC(1899,11,30) + v*86400000;
+    const d = new Date(ms);
+    return d.getUTCFullYear()+"/"+(d.getUTCMonth()+1)+"/"+d.getUTCDate();
+  }
+  return String(v);
+}
+function stCls(st){
+  const n = String(st||"").charAt(0);
+  return ({"1":"b-s1","2":"b-s2","3":"b-s3","4":"b-s4","5":"b-s5"})[n] || "b-s3";
+}
+function colAddr(i){ return String.fromCharCode(65+i); }
+
+/* ==================================================================
+   認証
+   ================================================================== */
+async function initAuth(){
+  S.msal = new msal.PublicClientApplication({
+    auth:{
+      clientId: CONFIG.clientId,
+      authority: "https://login.microsoftonline.com/" + CONFIG.tenantId,
+      redirectUri: window.location.origin + window.location.pathname,
+      navigateToLoginRequestUrl: false,
+    },
+    cache:{ cacheLocation:"sessionStorage", storeAuthStateInCookie:false },
+  });
+  await S.msal.initialize();
+  const res = await S.msal.handleRedirectPromise();
+  if(res && res.account) S.msal.setActiveAccount(res.account);
+  const accs = S.msal.getAllAccounts();
+  S.account = S.msal.getActiveAccount() || accs[0] || null;
+  if(S.account) S.msal.setActiveAccount(S.account);
+}
+async function signIn(){
+  try{
+    await S.msal.loginRedirect({ scopes:SCOPES, prompt:"select_account" });
+  }catch(e){ showErr("サインインに失敗しました。\n"+(e.message||e)); }
+}
+async function signOut(){
+  await S.msal.logoutRedirect({ account:S.account,
+    postLogoutRedirectUri: window.location.origin + window.location.pathname });
+}
+async function token(){
+  try{
+    const r = await S.msal.acquireTokenSilent({ scopes:SCOPES, account:S.account });
+    return r.accessToken;
+  }catch(e){
+    await S.msal.acquireTokenRedirect({ scopes:SCOPES, account:S.account });
+    throw e;
+  }
+}
+
+/* ==================================================================
+   Microsoft Graph
+   ================================================================== */
+async function g(path, opts){
+  const t = await token();
+  const o = Object.assign({ headers:{} }, opts||{});
+  o.headers = Object.assign({
+    Authorization:"Bearer "+t,
+    "Content-Type":"application/json",
+  }, o.headers);
+  const r = await fetch(GRAPH+path, o);
+  if(r.status===204) return null;
+  const txt = await r.text();
+  let body=null; try{ body = txt ? JSON.parse(txt) : null; }catch(_){ body={raw:txt}; }
+  if(!r.ok){
+    const m = (body && body.error && body.error.message) || r.statusText;
+    const err = new Error(m); err.status=r.status; err.body=body; throw err;
+  }
+  return body;
+}
+const ITEM = () => "/drives/"+CONFIG.driveId+"/items/"+CONFIG.itemId;
+const WB   = () => ITEM()+"/workbook";
+
+/** 対象ワークシートの ID を解決（シート名の前後空白ゆらぎを吸収） */
+async function resolveSheet(){
+  const r = await g(WB()+"/worksheets");
+  const want = CONFIG.sheetName.trim();
+  let hit = r.value.find(w => w.name.trim() === want);
+  if(!hit) hit = r.value.find(w => w.name.indexOf(want) >= 0);
+  if(!hit) throw new Error('シート「'+CONFIG.sheetName+'」が見つかりません。');
+  S.sheetId = hit.id;
+  S.sheetRealName = hit.name;
+}
+async function loadRows(){
+  const u = WB()+"/worksheets/"+encodeURIComponent(S.sheetId)
+          + "/usedRange(valuesOnly=true)?$select=address,values,rowCount,columnCount";
+  const r = await g(u);
+  const vals = r.values || [];
+  // 1 行目はヘッダー。sheetRow = 配列 index + 1
+  S.rows = vals.slice(1).map((v,i)=>({ sheetRow:i+2, v:v }));
+  return S.rows;
+}
+async function loadMeta(){
+  S.fileMeta = await g(ITEM()+"?$select=name,webUrl,lastModifiedDateTime,lastModifiedBy");
+}
+
+/** 行の一部セルを更新。patch = {列index: 値} */
+async function writeCells(sheetRow, patch){
+  const idx = Object.keys(patch).map(Number).sort((a,b)=>a-b);
+  // 連続する列をまとめて 1 リクエストにする
+  const groups=[]; let cur=null;
+  for(const i of idx){
+    if(cur && i === cur.end+1){ cur.end=i; }
+    else { cur={start:i,end:i}; groups.push(cur); }
+  }
+  for(const grp of groups){
+    const vals=[]; for(let i=grp.start;i<=grp.end;i++) vals.push(patch[i]===undefined?null:patch[i]);
+    const addr = colAddr(grp.start)+sheetRow+":"+colAddr(grp.end)+sheetRow;
+    await g(WB()+"/worksheets/"+encodeURIComponent(S.sheetId)+"/range(address='"+addr+"')",
+      { method:"PATCH", body: JSON.stringify({ values:[vals] }) });
+  }
+}
+
+/** 末尾に 1 行追加 */
+async function appendRow(data){
+  await loadRows();                             // 直前に再読込して衝突を減らす
+  // 書式だけ残った末尾の空行をまたがないよう、中身のある最終行を探す
+  let last = 1;
+  for(let i=S.rows.length-1;i>=0;i--){
+    if(S.rows[i].v.some(c => String(c==null?"":c).trim() !== "")){ last = S.rows[i].sheetRow; break; }
+  }
+  const row  = last + 1;
+  const sheet = encodeURIComponent(S.sheetId);
+
+  let nextNo = 1;
+  for(let i=S.rows.length-1;i>=0;i--){
+    const n = Number(S.rows[i].v[C.NO]);
+    if(!isNaN(n) && n>0){ nextNo = n+1; break; }
+  }
+
+  // 1) 直前の行から書式をコピー（罫線・塗り・折り返しを引き継ぐ）
+  if(last > 1){
+    try{
+      await g(WB()+"/worksheets/"+sheet+"/range(address='A"+row+":L"+row+"')/copyFrom",
+        { method:"POST", body: JSON.stringify({
+            sourceRange: "'"+S.sheetRealName+"'!A"+last+":L"+last,
+            copyType:"Formats", skipBlanks:false, transpose:false }) });
+    }catch(e){ /* 書式コピーは失敗しても続行 */ }
+  }
+
+  // 2) 値を書き込み
+  const vals = new Array(12).fill("");
+  vals[C.NO]    = nextNo;
+  vals[C.ST]    = data.status;
+  vals[C.DATE]  = excelSerial(new Date());
+  vals[C.PRI]   = data.pri;
+  vals[C.TITLE] = data.title;
+  vals[C.FROM]  = data.from;
+  vals[C.OWNER] = data.owner;
+  vals[C.REL]   = data.rel;
+  vals[C.MTG]   = data.mtg ? "○" : "";
+  vals[C.BODY]  = data.body;
+  vals[C.NOTE]  = data.note;
+  vals[C.ACT]   = data.act ? (todayStr()+" "+data.act) : "";
+
+  await g(WB()+"/worksheets/"+sheet+"/range(address='A"+row+":L"+row+"')",
+    { method:"PATCH", body: JSON.stringify({ values:[vals] }) });
+
+  // 3) 起表日を日付書式に
+  try{
+    await g(WB()+"/worksheets/"+sheet+"/range(address='C"+row+"')",
+      { method:"PATCH", body: JSON.stringify({ numberFormat:[["yyyy/m/d"]] }) });
+  }catch(e){ /* 書式設定は失敗しても値は入っている */ }
+
+  return nextNo;
+}
+
+/* ==================================================================
+   描画
+   ================================================================== */
+function showErr(msg){
+  const box = $("#errbox");
+  if(box){ box.textContent = msg; box.hidden=false; }
+  else { toast(msg, 6000); }
+  console.error(msg);
+}
+
+function renderSetup(){
+  const origin = window.location.origin + window.location.pathname;
+  $("#app").innerHTML = `
+  <div class="gate">
+    <div class="setup">
+      <h2>初期設定が必要です</h2>
+      <p style="color:var(--muted);margin:4px 0 18px">
+        Entra ID にこの画面を 1 度だけ登録してください（所要 5 分・初回のみ）。</p>
+      <ol>
+        <li><a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+               target="_blank" rel="noopener">Microsoft Entra 管理センター</a>
+            →「アプリの登録」→「新規登録」</li>
+        <li>名前：<code>社内課題対応状況 入力画面</code><br>
+            サポートされるアカウント：<b>この組織ディレクトリのみ</b></li>
+        <li>リダイレクト URI：プラットフォーム <b>シングルページ アプリケーション (SPA)</b> を選び、<br>
+            <code>${esc(origin)}</code> を入力</li>
+        <li>登録後、「概要」の<b>アプリケーション (クライアント) ID</b> をコピー</li>
+        <li>「API のアクセス許可」→ Microsoft Graph →<b>委任されたアクセス許可</b>で
+            <code>User.Read</code> と <code>Files.ReadWrite.All</code> を追加し、
+            <b>「管理者の同意を与えます」</b>をクリック</li>
+        <li>この HTML ファイルの先頭 <code>CONFIG.clientId</code> に、4. の ID を貼って保存</li>
+      </ol>
+      <div class="warn">
+        <b>アクセス制御について</b><br>
+        実際の権限は SharePoint 側（Teams「経営ボード」チームのメンバー）で決まります。
+        チームメンバー以外がサインインしても、書き込みは Graph が 403 で拒否します。
+        <code>CONFIG.boardMembers</code> は画面上の追加ガードです。
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:0">
+        「アプリの登録」ができない場合は、テナント管理者に 1.〜5. を依頼してください。</p>
+    </div>
+  </div>`;
+}
+
+function renderGate(){
+  $("#app").innerHTML = `
+  <div class="gate">
+    <div class="card">
+      <h2>社内課題対応状況</h2>
+      <p>Teams「経営ボード／一般」の課題一覧に、この画面から直接登録・更新できます。<br>
+         会社のアカウントでサインインしてください。</p>
+      <button class="btn btn-primary" id="si" style="padding:10px 22px">
+        Microsoft 365 でサインイン</button>
+      <div class="err" id="errbox" hidden></div>
+    </div>
+  </div>`;
+  $("#si").onclick = signIn;
+}
+
+function renderShell(){
+  const name = (S.me && (S.me.displayName||S.me.userPrincipalName)) || "";
+  const ini  = name ? name.trim().charAt(0) : "?";
+  $("#app").innerHTML = `
+  <div class="topbar"><div class="topbar-in">
+    <div class="brand">
+      <h1>社内課題対応状況</h1>
+      <span class="sub" id="fmeta"></span>
+    </div>
+    <a class="btn btn-sm" href="${esc(CONFIG.excelUrl)}" target="_blank" rel="noopener">Excel を開く</a>
+    <button class="btn btn-sm" id="reload">再読込</button>
+    <div class="who">
+      <span class="avatar">${esc(ini)}</span>
+      <span>${esc(name)}</span>
+      <button class="btn btn-sm btn-ghost" id="so">サインアウト</button>
+    </div>
+  </div></div>
+  <main>
+    <div class="err" id="errbox" hidden></div>
+    <div id="rowarn"></div>
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="タイトル・内容・具体的対応を検索">
+      <select id="fpri"><option value="">優先度：すべて</option>
+        <option value="高">高</option><option value="中">中</option><option value="低">低</option></select>
+      <select id="fowner"><option value="">担当者：すべて</option></select>
+      <label class="chk"><input type="checkbox" id="fmtg"> 会議対象のみ</label>
+      <span class="spacer"></span>
+      <span id="count" style="font-size:12px;color:var(--muted)"></span>
+      <button class="btn btn-primary" id="add">＋ 新規課題</button>
+    </div>
+    <div class="list" id="list"></div>
+  </main>`;
+
+  $("#so").onclick = signOut;
+  $("#reload").onclick = () => refresh(true);
+  $("#add").onclick = () => openAdd();
+  $("#q").oninput = e => { S.filter.q = e.target.value.trim(); renderList(); };
+  $("#fpri").onchange = e => { S.filter.pri = e.target.value; renderList(); };
+  $("#fmtg").onchange = e => { S.filter.mtgOnly = e.target.checked; renderList(); };
+  const os = $("#fowner");
+  CONFIG.owners.forEach(o => os.appendChild(el(`<option value="${esc(o)}">${esc(o)}</option>`)));
+  os.onchange = e => { S.filter.owner = e.target.value; renderList(); };
+
+  if(!S.canWrite){
+    $("#rowarn").innerHTML = `<div class="ro"><b>閲覧のみ</b>
+      あなたのアカウント（${esc(S.me.mail||S.me.userPrincipalName||"")}）は
+      経営ボードメンバーとして登録されていないため、登録・更新はできません。</div>`;
+  }
+}
+
+function renderStats(){
+  const box = $("#stats"); if(!box) return;
+  const cnt = {};
+  CONFIG.statuses.forEach(s=>cnt[s]=0);
+  S.rows.forEach(r=>{ const s=String(r.v[C.ST]||"").trim(); if(s in cnt) cnt[s]++; });
+  box.innerHTML = "";
+  CONFIG.statuses.forEach(s=>{
+    const on = S.filter.status.has(s);
+    const b = el(`<button class="stat" aria-pressed="${on}">
+        <span class="n" style="color:var(--${({"1":"s1","2":"s2","3":"s3","4":"s4","5":"s5"})[s.charAt(0)]})">${cnt[s]}</span>
+        <span class="l">${esc(s)}</span></button>`);
+    b.onclick = ()=>{
+      if(S.filter.status.has(s)) S.filter.status.delete(s); else S.filter.status.add(s);
+      renderStats(); renderList();
+    };
+    box.appendChild(b);
+  });
+}
+
+function visibleRows(){
+  const f=S.filter, q=f.q.toLowerCase();
+  return S.rows.filter(r=>{
+    const v=r.v;
+    if(!String(v[C.TITLE]||"").trim() && !String(v[C.BODY]||"").trim()) return false;
+    const st=String(v[C.ST]||"").trim();
+    if(f.status.size && !f.status.has(st)) return false;
+    if(f.pri && String(v[C.PRI]||"").trim().charAt(0)!==f.pri) return false;
+    if(f.owner && String(v[C.OWNER]||"").indexOf(f.owner)<0
+               && String(v[C.FROM]||"").indexOf(f.owner)<0
+               && String(v[C.REL]||"").indexOf(f.owner)<0) return false;
+    if(f.mtgOnly && !String(v[C.MTG]||"").trim()) return false;
+    if(q){
+      const hay=[v[C.TITLE],v[C.BODY],v[C.ACT],v[C.NOTE],v[C.FROM],v[C.OWNER],v[C.REL]]
+        .join(" ").toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  }).sort((a,b)=>{            // 新しい № を上に
+    const x=Number(a.v[C.NO]), y=Number(b.v[C.NO]);
+    if(isNaN(x)&&isNaN(y)) return b.sheetRow-a.sheetRow;
+    if(isNaN(x)) return 1;
+    if(isNaN(y)) return -1;
+    return y-x;
+  });
+}
+
+function renderList(){
+  const box=$("#list"); if(!box) return;
+  const rows=visibleRows();
+  $("#count").textContent = rows.length+" 件 / 全 "+S.rows.length+" 件";
+  if(!rows.length){
+    box.innerHTML = `<div class="empty">条件に一致する課題はありません。</div>`;
+    return;
+  }
+  box.innerHTML="";
+  rows.forEach(r=>{
+    const v=r.v, st=String(v[C.ST]||"").trim(), pri=String(v[C.PRI]||"").trim();
+    const node = el(`
+      <div class="row" role="button" tabindex="0">
+        <div class="row-top">
+          <span class="no">#${esc(v[C.NO])}</span>
+          <span class="badge ${stCls(st)}">${esc(st||"—")}</span>
+          ${pri?`<span class="pri pri-${esc(pri.charAt(0))}">${esc(pri)}</span>`:""}
+          <span class="title">${esc(v[C.TITLE]||"（無題）")}</span>
+          ${String(v[C.MTG]||"").trim()?`<span class="badge b-s2">会議</span>`:""}
+        </div>
+        <div class="row-meta">
+          <span>起票 <b>${esc(fmtDate(v[C.DATE]))}</b></span>
+          <span>発案 <b>${esc(v[C.FROM]||"—")}</b></span>
+          <span>主担当 <b>${esc(v[C.OWNER]||"—")}</b></span>
+          ${String(v[C.REL]||"").trim()?`<span>関係者 <b>${esc(v[C.REL])}</b></span>`:""}
+        </div>
+        ${String(v[C.BODY]||"").trim()?`<div class="row-snip">${esc(v[C.BODY])}</div>`:""}
+      </div>`);
+    node.onclick = ()=>openDetail(r);
+    node.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDetail(r); } };
+    box.appendChild(node);
+  });
+}
+
+/* ==================================================================
+   モーダル
+   ================================================================== */
+function closeModal(){ $("#ov").hidden=true; $("#ov").innerHTML=""; }
+function openModal(html){
+  const ov=$("#ov");
+  ov.innerHTML=html; ov.hidden=false;
+  ov.onclick = e=>{ if(e.target===ov) closeModal(); };
+  document.onkeydown = e=>{ if(e.key==="Escape" && !ov.hidden) closeModal(); };
+  return ov.firstElementChild;
+}
+function chipRow(targetId, items){
+  return `<div class="chips">`+items.map(o=>
+    `<button type="button" class="chip" data-chip="${esc(targetId)}" data-v="${esc(o)}">${esc(o)}</button>`
+  ).join("")+`</div>`;
+}
+function wireChips(root){
+  root.querySelectorAll("[data-chip]").forEach(b=>{
+    b.onclick=()=>{
+      const t=root.querySelector("#"+b.dataset.chip);
+      const cur=t.value.trim();
+      if(cur.split(/[\s,、]+/).indexOf(b.dataset.v)>=0) return;
+      t.value = cur ? cur+" "+b.dataset.v : b.dataset.v;
+    };
+  });
+}
+
+function openAdd(){
+  if(!S.canWrite){ toast("更新権限がありません"); return; }
+  const opt=(arr,sel)=>arr.map(o=>`<option value="${esc(o)}"${o===sel?" selected":""}>${esc(o)}</option>`).join("");
+  const m = openModal(`
+  <div class="modal">
+    <div class="modal-h"><h3>新規課題の登録</h3>
+      <button class="btn btn-sm btn-ghost" data-x>✕</button></div>
+    <div class="modal-b">
+      <div class="fld"><label class="req" for="f-title">タイトル</label>
+        <input type="text" id="f-title" maxlength="120" placeholder="例）法人携帯契約時の個人情報取り扱いに関する確認"></div>
+      <div class="grid2">
+        <div class="fld"><label for="f-st">ステータス</label>
+          <select id="f-st">${opt(CONFIG.statuses,"1.新規")}</select></div>
+        <div class="fld"><label for="f-pri">優先度</label>
+          <select id="f-pri">${opt(CONFIG.priorities,"中")}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="fld"><label class="req" for="f-from">発案者</label>
+          <input type="text" id="f-from" value="${esc(guessOwner())}">
+          ${chipRow("f-from",CONFIG.owners)}</div>
+        <div class="fld"><label for="f-owner">主担当</label>
+          <input type="text" id="f-owner">
+          ${chipRow("f-owner",CONFIG.owners)}</div>
+      </div>
+      <div class="fld"><label for="f-rel">関係者</label>
+        <input type="text" id="f-rel" value="ALL" placeholder="スペース区切り／ALL">
+        ${chipRow("f-rel",["ALL"].concat(CONFIG.owners))}</div>
+      <div class="fld"><label class="req" for="f-body">内容</label>
+        <textarea id="f-body" rows="4" placeholder="課題の内容を記入"></textarea></div>
+      <div class="fld"><label for="f-note">補足 <span class="hint">任意</span></label>
+        <textarea id="f-note" rows="2"></textarea></div>
+      <div class="fld"><label for="f-act">具体的対応 <span class="hint">任意・先頭に今日の日付が付きます</span></label>
+        <textarea id="f-act" rows="2"></textarea></div>
+      <div class="fld"><label class="chk"><input type="checkbox" id="f-mtg" checked>
+        経営会議の対象にする（会議 対象に「○」）</label></div>
+      <div class="fld" style="margin:0"><label>起表日</label>
+        <div style="color:var(--muted);font-size:13px">${esc(todayStr())}（自動）</div></div>
+      <div class="err" id="m-err" hidden></div>
+    </div>
+    <div class="modal-f">
+      <span class="msg" id="m-msg"></span>
+      <button class="btn" data-x>キャンセル</button>
+      <button class="btn btn-primary" id="m-ok">Excel に登録する</button>
+    </div>
+  </div>`);
+  m.querySelectorAll("[data-x]").forEach(b=>b.onclick=closeModal);
+  wireChips(m);
+  $("#f-title",m).focus();
+
+  $("#m-ok",m).onclick = async ()=>{
+    const d = {
+      title:$("#f-title",m).value.trim(), status:$("#f-st",m).value,
+      pri:$("#f-pri",m).value, from:$("#f-from",m).value.trim(),
+      owner:$("#f-owner",m).value.trim(), rel:$("#f-rel",m).value.trim(),
+      body:$("#f-body",m).value.trim(), note:$("#f-note",m).value.trim(),
+      act:$("#f-act",m).value.trim(), mtg:$("#f-mtg",m).checked,
+    };
+    const eb=$("#m-err",m);
+    if(!d.title || !d.from || !d.body){
+      eb.textContent="タイトル・発案者・内容は必須です。"; eb.hidden=false; return;
+    }
+    eb.hidden=true;
+    const ok=$("#m-ok",m); ok.disabled=true;
+    $("#m-msg",m).innerHTML = `<span class="spin"></span> 書き込み中…`;
+    try{
+      const no = await appendRow(d);
+      closeModal();
+      await refresh(true);
+      toast("№"+no+" として登録しました");
+    }catch(e){
+      ok.disabled=false; $("#m-msg",m).textContent="";
+      eb.textContent = graphMsg(e); eb.hidden=false;
+    }
+  };
+}
+
+function openDetail(r){
+  const v=r.v;
+  const opt=(arr,sel)=>arr.map(o=>`<option value="${esc(o)}"${o===String(sel||"").trim()?" selected":""}>${esc(o)}</option>`).join("");
+  const stNow=String(v[C.ST]||"").trim(), priNow=String(v[C.PRI]||"").trim();
+  const ro = !S.canWrite;
+  const m = openModal(`
+  <div class="modal">
+    <div class="modal-h">
+      <span class="badge ${stCls(stNow)}">${esc(stNow||"—")}</span>
+      <h3>#${esc(v[C.NO])}　${esc(v[C.TITLE]||"（無題）")}</h3>
+      <button class="btn btn-sm btn-ghost" data-x>✕</button></div>
+    <div class="modal-b">
+      ${ro?`<div class="ro">閲覧のみ（更新権限がありません）</div>`:""}
+      <div class="row-meta" style="margin:0 0 16px">
+        <span>起表日 <b>${esc(fmtDate(v[C.DATE]))}</b></span>
+        <span>発案者 <b>${esc(v[C.FROM]||"—")}</b></span>
+        <span>Excel 行 <b>${r.sheetRow}</b></span>
+      </div>
+      <div class="fld"><label>内容</label>
+        <textarea id="d-body" rows="3" ${ro?"readonly":""}>${esc(v[C.BODY]||"")}</textarea></div>
+      <div class="grid2">
+        <div class="fld"><label for="d-st">ステータス</label>
+          <select id="d-st" ${ro?"disabled":""}>${opt(CONFIG.statuses,stNow)}</select></div>
+        <div class="fld"><label for="d-pri">優先度</label>
+          <select id="d-pri" ${ro?"disabled":""}>
+            <option value="">—</option>${opt(CONFIG.priorities,priNow)}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="fld"><label for="d-owner">主担当</label>
+          <input type="text" id="d-owner" value="${esc(v[C.OWNER]||"")}" ${ro?"readonly":""}>
+          ${ro?"":chipRow("d-owner",CONFIG.owners)}</div>
+        <div class="fld"><label for="d-rel">関係者</label>
+          <input type="text" id="d-rel" value="${esc(v[C.REL]||"")}" ${ro?"readonly":""}>
+          ${ro?"":chipRow("d-rel",["ALL"].concat(CONFIG.owners))}</div>
+      </div>
+      <div class="fld"><label for="d-note">補足</label>
+        <textarea id="d-note" rows="2" ${ro?"readonly":""}>${esc(v[C.NOTE]||"")}</textarea></div>
+      <div class="fld"><label class="chk"><input type="checkbox" id="d-mtg"
+        ${String(v[C.MTG]||"").trim()?"checked":""} ${ro?"disabled":""}> 会議 対象</label></div>
+      ${ro?"":`<div class="fld"><label for="d-add">具体的対応を追記
+        <span class="hint">「${esc(todayStr())} 〜」として先頭に挿入されます</span></label>
+        <textarea id="d-add" rows="3" placeholder="今回の進捗・決定事項"></textarea></div>`}
+      <div class="fld" style="margin:0"><label>具体的対応（履歴）</label>
+        <div class="log">${esc(v[C.ACT]||"（記録なし）")}</div></div>
+      <div class="err" id="d-err" hidden></div>
+    </div>
+    <div class="modal-f">
+      <span class="msg" id="d-msg"></span>
+      <button class="btn" data-x>閉じる</button>
+      ${ro?"":`<button class="btn btn-primary" id="d-ok">変更を保存</button>`}
+    </div>
+  </div>`);
+  m.querySelectorAll("[data-x]").forEach(b=>b.onclick=closeModal);
+  if(!ro) wireChips(m);
+
+  const okBtn = $("#d-ok",m);
+  if(okBtn) okBtn.onclick = async ()=>{
+    const patch={};
+    const put=(col,val)=>{ if(String(val) !== String(v[col]==null?"":v[col])) patch[col]=val; };
+    put(C.ST,    $("#d-st",m).value);
+    put(C.PRI,   $("#d-pri",m).value);
+    put(C.OWNER, $("#d-owner",m).value.trim());
+    put(C.REL,   $("#d-rel",m).value.trim());
+    put(C.BODY,  $("#d-body",m).value.trim());
+    put(C.NOTE,  $("#d-note",m).value.trim());
+    put(C.MTG,   $("#d-mtg",m).checked ? "○" : "");
+
+    const add = $("#d-add",m).value.trim();
+    if(add){
+      const prev = String(v[C.ACT]||"");
+      patch[C.ACT] = todayStr()+" "+add + (prev ? "\n"+prev : "");
+    }
+    if(!Object.keys(patch).length){ toast("変更はありません"); return; }
+
+    const eb=$("#d-err",m); eb.hidden=true; okBtn.disabled=true;
+    $("#d-msg",m).innerHTML=`<span class="spin"></span> 書き込み中…`;
+    try{
+      await writeCells(r.sheetRow, patch);
+      closeModal();
+      await refresh(true);
+      toast("#"+v[C.NO]+" を更新しました");
+    }catch(e){
+      okBtn.disabled=false; $("#d-msg",m).textContent="";
+      eb.textContent = graphMsg(e); eb.hidden=false;
+    }
+  };
+}
+
+function graphMsg(e){
+  if(e && e.status===403)
+    return "書き込みが拒否されました（403）。\nTeams「経営ボード」チームのメンバーで、"
+         + "このファイルの編集権限があるか確認してください。";
+  if(e && e.status===423)
+    return "ファイルがロックされています（423）。\n誰かが Excel デスクトップ版で開いていないか確認してください。";
+  if(e && e.status===404)
+    return "ファイルまたはシートが見つかりません（404）。\n設定の driveId / itemId を確認してください。";
+  return "エラー: " + ((e && e.message) || e);
+}
+
+/* ==================================================================
+   起動
+   ================================================================== */
+function guessOwner(){
+  const n = (S.me && S.me.displayName) || "";
+  const hit = CONFIG.owners.find(o => n.indexOf(o) >= 0);
+  return hit || "";
+}
+function judgeCanWrite(){
+  const list = (CONFIG.boardMembers||[]).map(s=>String(s).toLowerCase());
+  if(!list.length) return true;               // 空なら SharePoint 権限に委ねる
+  const mail = String((S.me.mail||S.me.userPrincipalName||"")).toLowerCase();
+  return list.indexOf(mail) >= 0;
+}
+
+async function refresh(silent){
+  if(S.loading) return;
+  S.loading = true;
+  try{
+    if(!S.sheetId) await resolveSheet();
+    await Promise.all([ loadRows(), loadMeta() ]);
+    const fm = $("#fmeta");
+    if(fm && S.fileMeta){
+      const d = new Date(S.fileMeta.lastModifiedDateTime);
+      const by = (S.fileMeta.lastModifiedBy && S.fileMeta.lastModifiedBy.user
+                  && S.fileMeta.lastModifiedBy.user.displayName) || "";
+      fm.textContent = "経営ボード／一般　最終更新 "
+        + d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})
+        + (by?"（"+by+"）":"");
+    }
+    renderStats(); renderList();
+    const eb=$("#errbox"); if(eb) eb.hidden=true;
+  }catch(e){
+    showErr(graphMsg(e));
+  }finally{ S.loading=false; }
+}
+
+(async function main(){
+  if(!CONFIG.clientId || CONFIG.clientId === "PASTE_CLIENT_ID_HERE"){
+    renderSetup(); return;
+  }
+  try{ await initAuth(); }
+  catch(e){ renderGate(); showErr("初期化に失敗しました。\n"+(e.message||e)); return; }
+
+  if(!S.account){ renderGate(); return; }
+
+  try{
+    S.me = await g("/me?$select=displayName,mail,userPrincipalName,id");
+  }catch(e){
+    renderGate(); showErr(graphMsg(e)); return;
+  }
+  S.canWrite = judgeCanWrite();
+  renderShell();
+  await refresh();
+})();
+</script>
+</body>
+</html>
